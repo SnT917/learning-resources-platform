@@ -1,6 +1,7 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
-import { onMounted, defineProps } from "vue";
+import axios from "axios";
+import { Head, Link } from "@inertiajs/vue3";
+import { onMounted, defineProps, ref, watch } from "vue";
 
 const props = defineProps({
     canLogin: {
@@ -12,16 +13,35 @@ const props = defineProps({
     resources: {
         type: Array,
     },
+    categories: {
+        type: Array,
+    },
+});
+
+let search = ref("");
+let filteredResources = ref([]);
+let filteredCategory = ref(null);
+
+watch(search, (value) => {
+    axios.get("/api/resources?search=" + value + "&category=" + filteredCategory.value).then((response) => {
+        filteredResources.value = response.data;
+    });
+});
+
+watch(filteredCategory, (value) => {
+    axios.get("/api/resources?category=" + value + "&search=" + search.value).then((response) => {
+        filteredResources.value = response.data;
+    });
 });
 
 onMounted(() => {
-console.log("Recursos cargados!", props.resources);
+    filteredResources.value = props.resources;
 });
 
 </script>
 
 <template>
-    <Head title="Proyecto de Integración" />
+    <Head title='Proyecto de Integracion' />
 
     <div
         class="relative sm:flex sm:justify-center sm:items-center min-h-screen bg-dots-darker bg-center bg-gray-100 dark:bg-dots-lighter dark:bg-gray-900 selection:bg-red-500 selection:text-white"
@@ -53,7 +73,7 @@ console.log("Recursos cargados!", props.resources);
         <div class="max-w-7xl mx-auto p-6 lg:p-8">
             <div class="flex justify-center">
                 <svg
-                    viewBox="0 0 62 80"
+                    viewBox="0 0 62 70"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-16 w-auto bg-gray-100 dark:bg-gray-900"
@@ -63,6 +83,14 @@ console.log("Recursos cargados!", props.resources);
                         fill="#FF2D20"
                     />
                 </svg>
+            </div>
+        
+            <div class="search-container">
+                <input type="text" placeholder="Buscar..." v-model="search" class="search-input"/>
+                <select v-model="filteredCategory" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:shadow-outline-blue h-12">
+                    <option value="">Todas las categorías</option>"
+                    <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
+                </select>
             </div>
 
         <div class="flex justify-center">
@@ -84,18 +112,19 @@ console.log("Recursos cargados!", props.resources);
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="resource in resources" :key="resource.id" class="bg-gray-700 text-white">
+                    <tr v-for="resource in filteredResources" :key="resource.id" class="bg-gray-700 text-white">
                         <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">{{ resource.title }}</td>
                         <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">{{ resource.category.name }}</td>
                         <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">{{ resource.description }}</td>
                         <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-                            <a target="_blank" :href="resource.link">Ver recurso</a>
-                        </td>
-                        
+                            <a target="_blank" :href="resource.link">Ver recurso</a></td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
+        
+
     </div>
 
 </div>
@@ -111,4 +140,27 @@ console.log("Recursos cargados!", props.resources);
         background-image: url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1.22676 0C1.91374 0 2.45351 0.539773 2.45351 1.22676C2.45351 1.91374 1.91374 2.45351 1.22676 2.45351C0.539773 2.45351 0 1.91374 0 1.22676C0 0.539773 0.539773 0 1.22676 0Z' fill='rgba(255,255,255,0.07)'/%3E%3C/svg%3E");
     }
 }
+
+/* Estilos CSS para el contenedor centrado en la parte superior */
+.search-container {
+  position: static;
+  top: 0%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000; /* Ajusta según sea necesario para que esté encima del contenido */
+}
+
+.search-input {
+  width: 200px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+  margin-right: 5px;
+}
+
 </style>

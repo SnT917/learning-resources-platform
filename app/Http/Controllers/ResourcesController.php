@@ -15,7 +15,8 @@ class ResourcesController extends Controller
         return Inertia::render('Resources', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
-            'resources' => Resources::with('category')->get(),
+            'resources' => Resources::with('category')->latest()->get(),
+            'categories' => Category::all(),
         ]);
     }
 
@@ -24,8 +25,20 @@ class ResourcesController extends Controller
             'title' => $request->title,
             'link' => $request->link,
             'description' => $request->description,
-            'category_id' => Category::first()->id,
+            'category_id' => $request->category_id,
             'creator_id' => $request->user()->id,
         ]);
+    }
+
+    public function search(Request $request){
+        return Resources::query()
+            ->when(!empty($request->search), function ($query) use ($request){
+                return $query->where('title', 'like', "%$request->search%");
+            })
+            ->when(!empty($request->category), function ($query) use ($request){
+                return $query->where('category_id', $request->category);
+            })
+            ->with('category')
+            ->get();
     }
 }

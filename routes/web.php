@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Models\Resources;
 use App\Models\Category;
 use App\Http\Controllers\ResourcesController;
+use App\Http\Controllers\CategoryController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -34,4 +36,6 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
+Route::get('api/resources', [ResourcesController::class, 'search']);
+Route::get('api/categories', [CategoryController::class, 'index']);
 Route::middleware('auth')->post('api/resources', [ResourcesController::class, 'store']);
