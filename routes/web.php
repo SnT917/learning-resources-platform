@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ResourcesController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use App\Models\Resources;
+use App\Models\Category;
+use App\Http\Controllers\ResourcesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,12 +34,4 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-Route::middleware('auth')->post('api/resources', function (Request $request) {
-    resources::create([
-        'title' => $request->title,
-        'link' => $request->link,
-        'description' => $request->description,
-        'category_id' => Category::first()->id,
-        'creator_id' => $request->user()->id,
-    ]);
-});
+Route::middleware('auth')->post('api/resources', [ResourcesController::class, 'store']);
