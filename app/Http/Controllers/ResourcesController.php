@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Route;
-use App\Models\Resources;
 use App\Models\Category;
+use App\Models\Resources;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 class ResourcesController extends Controller
 {
@@ -15,7 +15,7 @@ class ResourcesController extends Controller
         return Inertia::render('Resources', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
-            'resources' => Resources::with('category')->latest()->get(),
+            'resources' => Resources::with('category', 'votes')->latest()->get(),
             'categories' => Category::all(),
         ]);
     }
@@ -38,7 +38,7 @@ class ResourcesController extends Controller
             ->when(!empty($request->category), function ($query) use ($request){
                 return $query->where('category_id', $request->category);
             })
-            ->with('category')
+            ->with('category','votes')
             ->get();
     }
 }
