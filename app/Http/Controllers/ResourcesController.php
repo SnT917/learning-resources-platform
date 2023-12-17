@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Models\Category;
 use App\Models\Resources;
+use App\Models\Voter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,7 @@ class ResourcesController extends Controller
             'canRegister' => Route::has('register'),
             'resources' => Resources::with('category', 'votes')->latest()->get(),
             'categories' => Category::all(),
+            'voterId' => Voter::getOrCreateVoter($request)->code,
         ]);
     }
 
@@ -38,7 +40,7 @@ class ResourcesController extends Controller
             ->when(!empty($request->category), function ($query) use ($request){
                 return $query->where('category_id', $request->category);
             })
-            ->with('category','votes')
-            ->get();
+            ->with('category', 'votes')
+            ->latest()->get();
     }
 }

@@ -16,6 +16,9 @@ const props = defineProps({
     categories: {
         type: Array,
     },
+    voterId: {
+        type: String,
+    },
 });
 
 let search = ref("");
@@ -36,14 +39,23 @@ watch(filteredCategory, (value) => {
 
 onMounted(() => {
     filteredResources.value = props.resources;
-    console.log(filteredResources);
+    //console.log(props.voterId, 'votante');
 });
 
 function vote(resourceId) {
     axios.get("/api/vote/" + resourceId).then((response) => {
-        // Código...
-        console.log(response.data);     
+        filteredResources.value = filteredResources.value.map((resource => {
+            if (resource.id === resourceId) {
+                return response.data;
+            }
+
+            return resource;
+        }));
     });
+}
+
+function youHaveVoted(resource){
+    return resource.votes.find((vote) => vote.code === props.voterId);
 }
 
 </script>
@@ -122,11 +134,11 @@ function vote(resourceId) {
                         <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
                             <div class="flex">
                                 <span>
-                                    {{ resource.votes }}
+                                    {{ resource.votes.length }}
                                 </span>
                             
                                 <button @click="vote(resource.id)">
-                                    <svg
+                                    <svg v-if="youHaveVoted(resource)"
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
@@ -135,7 +147,7 @@ function vote(resourceId) {
                                         <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
                                     </svg>
 
-                                    <svg
+                                    <svg v-else
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
@@ -150,7 +162,7 @@ function vote(resourceId) {
                         <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">{{ resource.category.name }}</td>
                         <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">{{ resource.description }}</td>
                         <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-                            <a target="_blank" :href="resource.link">Ver recurso</a></td>
+                            <a target="_blank" :href=resource.link>Ver recurso</a></td>
                     </tr>
                 </tbody>
             </table>
